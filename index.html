@@ -1,55 +1,71 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>canvas tutorial</title>
+    <title>canvas dragging tutorial</title>
     <style>
       #canvas {
         background: #666;
       }
     </style>
   </head>
-  <body>
+  <body onLoad="init()">
     <canvas id="canvas" width="640" height="480"></canvas>
     <script>
       var canvas = document.getElementById("canvas");
+      var context = canvas.getContext('2d');
+      var x, y, relX, relY, objX, objY;
+      var objWidth, objHeight;
+      var dragging = false;
+
+      function init() {
+        objWidth = 50;
+        objHeight = 50;
+        objX = canvas.width / 2 - objWidth / 2;
+        objY = canvas.height / 2 - objHeight / 2;
+
+        drawRect();
+      }
 
       function onDown(e) {
-        console.log("down");
+        var offsetX = canvas.getBoundingClientRect().left;
+        var offsetY = canvas.getBoundingClientRect().top;
+
+        x = e.clientX - offsetX;
+        y = e.clientY - offsetY;
+
+        if (objX < x && (objX + objWidth) > x && objY < y && (objY + objHeight) > y) {
+          dragging = true;
+          relX = objX - x;
+          relY = objY - y;
+        }
+      }
+
+      function onMove(e) {
+        var offsetX = canvas.getBoundingClientRect().left;
+        var offsetY = canvas.getBoundingClientRect().top;
+
+        x = e.clientX - offsetX;
+        y = e.clientY - offsetY;
+
+        if (dragging) {
+          objX = x + relX;
+          objY = y + relY;
+          drawRect();
+        }
       }
 
       function onUp(e) {
-        console.log("up");
+        dragging = false;
       }
-
-      function onClick(e) {
-        console.log("click");
-        var x = e.clientX - canvas.offsetLeft;
-        var y = e.clientY - canvas.offsetTop;
-        console.log("x:", x, "y:", y);
-
-        drawRect(x, y, 10, 10);
-      }
-
-      function onOver(e) {
-        console.log("mouseover");
-      }
-
-      function onOut() {
-        console.log("mouseout");
-      }
-
-      function drawRect(x, y, width, height) {
-        var context = canvas.getContext('2d');
-        context.fillRect(x, y, width, height);
+  
+      function drawRect() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillRect(objX, objY, objWidth, objHeight);
       }
 
       canvas.addEventListener('mousedown', onDown, false);
+      canvas.addEventListener('mousemove', onMove, false);
       canvas.addEventListener('mouseup', onUp, false);
-      canvas.addEventListener('click', onClick, false);
-      canvas.addEventListener('mouseover', onOver, false);
-      canvas.addEventListener('mouseout', onOut, false);
-      canvas.addEventListener('touchstart', onDown, false);
-      canvas.addEventListener('touchend', onUp, false);
     </script>
   </body>
 </html>
